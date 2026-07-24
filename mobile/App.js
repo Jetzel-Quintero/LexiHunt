@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, FlatList, ActivityIndicator, TouchableOpacity, Platform } from 'react-native';
 import axios from 'axios';
 
 export default function App() {
@@ -9,7 +9,7 @@ export default function App() {
 
   // NOTE: If testing on a physical phone, replace 'localhost' with your computer's local IP address (e.g., '192.168.1.X')
   // If testing on Android Emulator, use '10.0.2.2'
-  const API_URL = 'http://localhost:8000/api/categories';
+  const API_URL = 'http://192.168.1.11:8000/api/categories';
 
   useEffect(() => {
     axios.get(API_URL)

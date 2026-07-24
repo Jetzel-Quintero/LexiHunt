@@ -10,7 +10,7 @@ Say goodbye to dry translations and boring memorization lists: users master new 
 
 - **Mobile Frontend:** React Native (Expo) / JavaScript
 - **Backend Automation & Logic:** Python (FastAPI)
-- **Database:** MySQL (for relational structured data like categories, users, and items)
+- **Database:** SQL Server (for relational structured data like categories, users, and items)
 - **Local Storage:** AsyncStorage / SQLite (for offline progress)
 - **Version Control:** Git & GitHub
 
@@ -21,14 +21,14 @@ LexiHunt/
 │
 ├── assets/                 # Images, icons, and comprehensible input graphics
 ├── backend/                # Python scripts and FastAPI endpoints for automation
-├── database/               # MySQL schemas, queries, and connection scripts
+├── database/               # SQL Server schemas, queries, and connection scripts
 ├── mobile-app/             # React Native screens and game components
 └── README.md               # Project documentation and roadmap
 ```
 
 ## 🚀 Future Roadmap & Steps
 
-- [ ] **Phase 1:** Setup local repository, database structure, and core vocabulary categories in MySQL.
+- [ ] **Phase 1:** Setup local repository, database structure, and core vocabulary categories in SQL Server Management Studio 22.
 - [ ] **Phase 2:** Build the core word search puzzle logic and mobile UI screens.
 - [ ] **Phase 3:** Integrate comprehensible input images and the reward system (coins).
 - [ ] **Phase 4:** Implement the pet shop and avatar customization store.
