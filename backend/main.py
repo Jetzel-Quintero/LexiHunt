@@ -29,3 +29,30 @@ def get_categories():
     cursor.close()
     conn.close()
     return {"categories": categories}
+
+@app.get("/api/vocabulary/{category_id}")
+def get_vocabulary_by_category(category_id: int):
+    conn = get_db_connection()
+    if not conn:
+        return {"error": "Database connection failed"}
+    
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, english_word, spanish_word, image_url, example_sentence FROM vocabulary_words WHERE category_id = ?",
+        category_id
+    )
+    rows = cursor.fetchall()
+    
+    words = []
+    for row in rows:
+        words.append({
+            "id": row[0],
+            "english_word": row[1],
+            "spanish_word": row[2],
+            "image_url": row[3],
+            "example_sentence": row[4]
+        })
+    
+    cursor.close()
+    conn.close()
+    return {"category_id": category_id, "vocabulary": words}
