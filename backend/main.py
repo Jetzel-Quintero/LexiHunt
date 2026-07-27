@@ -46,7 +46,7 @@ def get_vocabulary_by_category(category_id: int):
         return {"error": "Database connection failed"}
     
     cursor = conn.cursor()
-    # Nota la tupla (category_id,) aquí abajo para evitar errores con SQL Server:
+
     cursor.execute(
         "SELECT id, english_word, spanish_word, image_url, example_sentence FROM vocabulary_words WHERE category_id = ?",
         (category_id,)
