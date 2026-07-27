@@ -1,4 +1,3 @@
-// mobile/components/GameBoard.js
 import React from 'react';
 import { Text, View, FlatList, ActivityIndicator, TouchableOpacity, SafeAreaView } from 'react-native';
 import { styles } from '../styles';
@@ -12,7 +11,7 @@ export default function GameBoard({
   grid, 
   selectedCells, 
   onCellPress,
-  timer // <--- Recibimos el tiempo
+  timer
 }) {
   const formatTime = (totalSeconds) => {
     const minutes = Math.floor(totalSeconds / 60);

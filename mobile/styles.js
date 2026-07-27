@@ -75,4 +75,11 @@ export const styles = StyleSheet.create({
     color: '#065f46',
     textDecorationLine: 'line-through',
   },
+  gridCellFound: {
+    backgroundColor: '#10b981', // Verde esmeralda para aciertos
+    borderColor: '#059669',
+  },
+  cellTextFoundText: {
+    color: '#ffffff',
+  },
 });
