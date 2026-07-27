@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, FlatList, ActivityIndicator, TouchableOpacity, SafeAreaView, Platform} from 'react-native';
 import axios from 'axios';
+
 import { styles } from './styles';
 import { generateWordSearchGrid } from './utils/wordSearch';
 import CategoryList from './components/CategoryList';
 import GameBoard from './components/GameBoard';
+
+import WinModal from './components/WinModal';
 
 
 export default function App() {
@@ -17,6 +20,10 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [loadingWords, setLoadingWords] = useState(false);
   const [error, setError] = useState(null);
+
+  // States for the Timer and the Victory
+  const [timer, setTimer] = useState(0);
+  const [isGameWon, setIsGameWon] = useState(false);
 
   // Base URL for on-premises
   const API_BASE_URL = 'http://localhost:8000/api';
@@ -34,13 +41,31 @@ export default function App() {
         setLoading(false);
       });
   }, []);
+  
+
+  // Stopwatch Logic
+  useEffect(() => {
+    let interval = null;
+    if (selectedCategory && !isGameWon && !loadingWords) {
+      interval = setInterval(() => {
+        setTimer(prev => prev + 1);
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [selectedCategory, isGameWon, loadingWords]);
+
+
 
 const handleSelectCategory = (category) => {
     const catId = category.id || category.category_id;
     setSelectedCategory(category);
     setLoadingWords(true);
     setSelectedCells([]); 
-    setFoundWords([]);      
+    setFoundWords([]);
+    setTimer(0);
+    setIsGameWon(false);      
     
     axios.get(`${API_BASE_URL}/vocabulary/${catId}`)
       .then(response => {
@@ -62,26 +87,33 @@ const handleSelectCategory = (category) => {
 
 // Handle the tap in each cell of the word search
 const handleCellPress = (r, c, letter) => {
-  const exists = selectedCells.some(cell => cell.r === r && cell.c === c);
-  let updatedCells = [];
+    if (isGameWon) return;
 
-  if (exists) {
-    updatedCells = selectedCells.filter(cell => !(cell.r === r && cell.c === c));
-  } else {
-    updatedCells = [...selectedCells, { r, c, letter }];
-  }
+    const exists = selectedCells.some(cell => cell.r === r && cell.c === c);
+    let updatedCells = [];
 
-  setSelectedCells(updatedCells);
+    if (exists) {
+      updatedCells = selectedCells.filter(cell => !(cell.r === r && cell.c === c));
+    } else {
+      updatedCells = [...selectedCells, { r, c, letter }];
+    }
 
-  const formedWord = updatedCells.map(cell => cell.letter).join('');
-    
-  const matchedWordObj = vocabulary.find(
-    item => item.english_word.toUpperCase() === formedWord && !foundWords.includes(item.english_word)
-  );
+    setSelectedCells(updatedCells);
 
-  if (matchedWordObj) {
-    setFoundWords([...foundWords, matchedWordObj.english_word]);
-    setSelectedCells([]);
+    const formedWord = updatedCells.map(cell => cell.letter).join('');
+    const matchedWordObj = vocabulary.find(
+      item => item.english_word.toUpperCase() === formedWord && !foundWords.includes(item.english_word)
+    );
+
+    if (matchedWordObj) {
+      const updatedFoundWords = [...foundWords, matchedWordObj.english_word];
+      setFoundWords(updatedFoundWords);
+      setSelectedCells([]);
+
+    // We check if he has already found all the words to activate the victory
+    if (updatedFoundWords.length === vocabulary.length) {
+        setIsGameWon(true);
+    }
   }
 };  
 
@@ -104,18 +136,26 @@ const handleCellPress = (r, c, letter) => {
 
 
 // GameBoard
-  if (selectedCategory) {
+ if (selectedCategory) {
     return (
-      <GameBoard 
-        selectedCategory={selectedCategory}
-        onBack={() => setSelectedCategory(null)}
-        loadingWords={loadingWords}
-        vocabulary={vocabulary}
-        foundWords={foundWords}
-        grid={grid}
-        selectedCells={selectedCells}
-        onCellPress={handleCellPress}
-      />
+      <View style={{ flex: 1 }}>
+        <GameBoard 
+          selectedCategory={selectedCategory}
+          onBack={() => setSelectedCategory(null)}
+          loadingWords={loadingWords}
+          vocabulary={vocabulary}
+          foundWords={foundWords}
+          grid={grid}
+          selectedCells={selectedCells}
+          onCellPress={handleCellPress}
+          timer={timer}
+        />
+        <WinModal 
+          visible={isGameWon} 
+          time={timer} 
+          onPlayAgain={() => setSelectedCategory(null)} 
+        />
+      </View>
     );
   }
 
