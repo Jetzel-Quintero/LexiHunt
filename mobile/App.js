@@ -71,11 +71,13 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [vocabulary, setVocabulary] = useState([]);
   const [grid, setGrid] = useState([]);
+  const [selectedCells, setSelectedCells] = useState([]);
+  const [foundWords, setFoundWords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingWords, setLoadingWords] = useState(false);
   const [error, setError] = useState(null);
 
-  // URL base adaptada para entorno local (web o emulador)
+  // URL base para entorno local
   const API_BASE_URL = 'http://localhost:8000/api';
 
   useEffect(() => {
@@ -96,6 +98,8 @@ const handleSelectCategory = (category) => {
     const catId = category.id || category.category_id;
     setSelectedCategory(category);
     setLoadingWords(true);
+    setSelectedCells([]); 
+    setFoundWords([]);      
     
     axios.get(`${API_BASE_URL}/vocabulary/${catId}`)
       .then(response => {
@@ -114,6 +118,31 @@ const handleSelectCategory = (category) => {
         setLoadingWords(false);
       });
   };
+
+// Manejar el toque en cada celda de la sopa de letras
+const handleCellPress = (r, c, letter) => {
+  const exists = selectedCells.some(cell => cell.r === r && cell.c === c);
+  let updatedCells = [];
+
+  if (exists) {
+    updatedCells = selectedCells.filter(cell => !(cell.r === r && cell.c === c));
+  } else {
+    updatedCells = [...selectedCells, { r, c, letter }];
+  }
+
+  setSelectedCells(updatedCells);
+
+  const formedWord = updatedCells.map(cell => cell.letter).join('');
+    
+  const matchedWordObj = vocabulary.find(
+    item => item.english_word.toUpperCase() === formedWord && !foundWords.includes(item.english_word)
+  );
+
+  if (matchedWordObj) {
+    setFoundWords([...foundWords, matchedWordObj.english_word]);
+    setSelectedCells([]);
+  }
+};  
 
   if (loading) {
     return (
@@ -154,22 +183,34 @@ const handleSelectCategory = (category) => {
               horizontal
               showsHorizontalScrollIndicator={false}
               style={{ maxHeight: 90, marginBottom: 15 }}
-              renderItem={({ item }) => (
-                <View style={styles.wordChip}>
-                  <Text style={styles.chipText}>{item.english_word}</Text>
-                </View>
-              )}
+              renderItem={({ item }) => {
+                const isFound = foundWords.includes(item.english_word);
+                return (
+                  <View style={[styles.wordChip, isFound && styles.wordChipFound]}>
+                    <Text style={[styles.chipText, isFound && styles.chipTextFound]}>
+                      {item.english_word} {isFound ? '✓' : ''}
+                    </Text>
+                  </View>
+                );
+              }}
             />
 
-            {/* 2. TABLERO / CUADRÍCULA DE LA SOPA DE LETRAS */}
+
             <View style={styles.gridContainer}>
               {grid.map((row, rowIndex) => (
                 <View key={rowIndex} style={styles.gridRow}>
-                  {row.map((letter, colIndex) => (
-                    <TouchableOpacity key={colIndex} style={styles.gridCell}>
-                      <Text style={styles.cellText}>{letter}</Text>
-                    </TouchableOpacity>
-                  ))}
+                  {row.map((letter, colIndex) => {
+                    const isSelected = selectedCells.some(cell => cell.r === rowIndex && cell.c === colIndex);
+                    return (
+                      <TouchableOpacity 
+                        key={colIndex} 
+                        style={[styles.gridCell, isSelected && styles.gridCellSelected]}
+                        onPress={() => handleCellPress(rowIndex, colIndex, letter)}
+                      >
+                        <Text style={[styles.cellText, isSelected && styles.cellTextSelected]}>{letter}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               ))}
             </View>
@@ -257,5 +298,19 @@ const styles = StyleSheet.create({
     color: '#4f46e5',
     fontWeight: 'bold',
     fontSize: 14,
+  },
+  gridCellSelected: {
+    backgroundColor: '#4f46e5',
+    borderColor: '#4338ca',
+  },
+  cellTextSelected: {
+    color: '#ffffff',
+  },
+  wordChipFound: {
+    backgroundColor: '#d1fae5',
+  },
+  chipTextFound: {
+    color: '#065f46',
+    textDecorationLine: 'line-through',
   },
 });
